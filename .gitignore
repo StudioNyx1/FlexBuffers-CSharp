@@ -3,3 +3,5 @@ FlexBuffers/obj
 FlexBuffersCSharpTests/bin
 FlexBuffersCSharpTests/obj
 packages
+*.csproj.user
+.vs
