@@ -14,6 +14,8 @@ namespace FlexBuffers
         private readonly byte _byteWidth;
         private readonly Type _type;
 
+        private static NumberFormatInfo staticNi;
+        
         internal FlxValue(byte[] buffer, int offset, byte parentWidth, byte packedType)
         {
             _buffer = buffer;
@@ -32,6 +34,7 @@ namespace FlexBuffers
             _type = type;
         }
 
+
         public static FlxValue FromBytes(byte[] bytes)
         {
             if (bytes.Length < 3)
@@ -44,6 +47,22 @@ namespace FlexBuffers
             var offset = bytes.Length - byteWidth - 2;
             return new FlxValue(bytes, offset, byteWidth, packedType);
         }
+
+        public static FlxValue FromBytes(byte[] bytes, NumberFormatInfo ni)
+        {
+            if (bytes.Length < 3)
+            {
+                throw new Exception($"Invalid buffer {bytes}");
+            }
+
+            staticNi = ni;
+
+            var byteWidth = bytes[bytes.Length - 1];
+            var packedType = bytes[bytes.Length - 2];
+            var offset = bytes.Length - byteWidth - 2;
+            return new FlxValue(bytes, offset, byteWidth, packedType);
+        }
+
 
         public Type ValueType => _type;
         public int BufferOffset => _offset;
@@ -288,8 +307,8 @@ namespace FlexBuffers
                 }
 
                 if (_type == Type.Float || _type == Type.IndirectFloat)
-                {
-                    return AsDouble.ToString(CultureInfo.CurrentCulture);
+                {                    
+                    return AsDouble.ToString(staticNi);
                 }
 
                 if (TypesUtil.IsAVector(_type))
