@@ -79,49 +79,6 @@ namespace FlexBuffers
             _finished = false;
         }
 
-        //public byte[] CompressZlib()
-        //{
-        //    var outputMemoryStream = new MemoryStream();
-        //    using (var outputStream = new DeflaterOutputStream(outputMemoryStream))
-        //    {
-        //        var inputMemoryStream = new MemoryStream(_bytes);
-        //        inputMemoryStream.CopyTo(outputStream);
-        //    }
-
-        //    return outputMemoryStream.ToArray();
-        //}
-
-        //public byte[] CompressBzip2()
-        //{
-        //    var outputMemoryStream = new MemoryStream();
-        //    using (var outputStream = new BZip2OutputStream(outputMemoryStream))
-        //    {
-        //        var inputMemoryStream = new MemoryStream(_bytes);
-        //        inputMemoryStream.CopyTo(outputStream);
-        //    }
-
-        //    return outputMemoryStream.ToArray();
-        //}
-
-        //public byte[] CompressGzipSharp()
-        //{
-        //    var outputMemoryStream = new MemoryStream();
-        //    using (var outputStream = new GZipOutputStream(outputMemoryStream))
-        //    {
-        //        var inputMemoryStream = new MemoryStream(_bytes);
-        //        inputMemoryStream.CopyTo(outputStream);
-        //    }
-
-        //    return outputMemoryStream.ToArray();
-        //}
-
-        //public int CompressLZ4()
-        //{
-        //    byte[] Buffer = new byte[24072];
-
-        //    return LZ4Codec.Encode(_bytes, 0, (int)_offset, Buffer, 0, 20000, LZ4Level.L00_FAST);
-        //}
-
         public byte[] CompressGzip()
         {
             using (var compressedStream = new MemoryStream())
@@ -797,8 +754,10 @@ namespace FlexBuffers
         {
             var newOffset = NewOffset(width);
             BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset);
-            // var count = Math.Min((ulong)bytes.Length, width);
-            // Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
+            //var newOffset = NewOffset(width);
+            //var bytes = BitConverter.GetBytes(value);
+            //var count = Math.Min((ulong)bytes.Length, width);
+            //Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
             _offset = newOffset;
         }
 
