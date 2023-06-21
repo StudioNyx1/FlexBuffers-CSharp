@@ -682,6 +682,11 @@ public class FlexBufferInPlaceBuilder
         {
             Buffer1.Add(value);
         }
+
+        public void AddStringAsBytes(byte[] bytes)
+        {
+            Buffer1.AddStringAsBytes(bytes);
+        }
 }
 
 }

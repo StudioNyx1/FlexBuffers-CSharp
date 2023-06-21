@@ -79,17 +79,6 @@ namespace FlexBuffers
             _finished = false;
         }
 
-        public byte[] CompressGzip()
-        {
-            using (var compressedStream = new MemoryStream())
-            using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress))
-            {
-                zipStream.Write(Bytes, 0, (int)_offset);
-                zipStream.Close();
-                return compressedStream.ToArray();
-            }
-        }
-
         public static byte[] Null()
         {
             var buffer = new FlexBuffer(3);
@@ -237,6 +226,7 @@ namespace FlexBuffers
             buffer.Add(blob);
             return buffer.Finish();
         }
+
 
         public static byte[] From(IEnumerable value, Options options = Options.ShareKeys | Options.ShareStrings | Options.ShareKeyVectors)
         {
@@ -400,29 +390,6 @@ namespace FlexBuffers
 
         internal Type Add(string value)
         {
-            // BitConvertUnsafe for string doesnt work yet, and it doesnt help much with memory
-            // var length = (ulong)BitConverterUnsafe.GetBytesUTF8String(value, Bytes, (int)_offset);
-
-            //var bytes = Encoding.UTF8.GetBytes(value);
-            //var length = (ulong)bytes.Length;
-            //var bitWidth = BitWidthUtil.Width(length);
-            //if (_options.HasFlag(Options.ShareStrings) && _stringCache.ContainsKey(value))
-            //{
-            //    _stack.Add(StackValue.Value(_stringCache[value], bitWidth, Type.String));
-            //    return Type.String;
-            //}
-            //var byteWidth = Align(bitWidth);
-            //Write(length, byteWidth);
-            //var stringOffset = _offset;
-            //var newOffset = NewOffset(length + 1);
-            //Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)length);
-            //_offset = newOffset;
-            //_stack.Add(StackValue.Value(stringOffset, bitWidth, Type.String));
-            //if (_options.HasFlag(Options.ShareStrings))
-            //{
-            //    _stringCache[value] = stringOffset;
-            //}
-            //return Type.String;
             var bytes = Encoding.UTF8.GetBytes(value);
             var length = (ulong)bytes.Length;
             var bitWidth = BitWidthUtil.Width(length);
@@ -450,7 +417,7 @@ namespace FlexBuffers
             var length = (ulong)value.Length;
             var bitWidth = BitWidthUtil.Width(length);
             var byteWidth = Align(bitWidth);
-            Write(value.Length, byteWidth);
+            Write(length, byteWidth);
 
             var newOffset = NewOffset(length);
             var blobOffset = _offset;
@@ -458,6 +425,29 @@ namespace FlexBuffers
             _offset = newOffset;
             _stack.Add(StackValue.Value(blobOffset, bitWidth, Type.Blob));
             return Type.Blob;
+        }
+
+        internal Type AddStringAsBytes(byte[] bytes)
+        {
+            var length = (ulong)bytes.Length;
+            var bitWidth = BitWidthUtil.Width(length);
+            //if (_options.HasFlag(Options.ShareStrings) && _stringCache.ContainsKey(bytes))
+            //{
+            //    _stack.Add(StackValue.Value(_stringCache[bytes], bitWidth, Type.String));
+            //    return Type.String;
+            //}
+            var byteWidth = Align(bitWidth);
+            Write(length, byteWidth);
+            var stringOffset = _offset;
+            var newOffset = NewOffset(length + 1);
+            Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)length);
+            _offset = newOffset;
+            _stack.Add(StackValue.Value(stringOffset, bitWidth, Type.String));
+            //if (_options.HasFlag(Options.ShareStrings))
+            //{
+            //    _stringCache[value] = stringOffset;
+            //}
+            return Type.String;
         }
 
         private void AddDynamicVector(IEnumerable values)
