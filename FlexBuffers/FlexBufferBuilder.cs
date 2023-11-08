@@ -687,6 +687,11 @@ public class FlexBufferInPlaceBuilder
         {
             Buffer1.AddStringAsBytes(bytes);
         }
+
+        public void AddDoubleArrayAsPtr(IntPtr ptr, ulong length)
+        {
+            Buffer1.AddDoubleArrayAsPtr(ptr, length);
+        }
 }
 
 }

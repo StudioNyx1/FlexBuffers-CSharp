@@ -431,23 +431,45 @@ namespace FlexBuffers
         {
             var length = (ulong)bytes.Length;
             var bitWidth = BitWidthUtil.Width(length);
-            //if (_options.HasFlag(Options.ShareStrings) && _stringCache.ContainsKey(bytes))
-            //{
-            //    _stack.Add(StackValue.Value(_stringCache[bytes], bitWidth, Type.String));
-            //    return Type.String;
-            //}
             var byteWidth = Align(bitWidth);
             Write(length, byteWidth);
+
             var stringOffset = _offset;
             var newOffset = NewOffset(length + 1);
             Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)length);
             _offset = newOffset;
+
             _stack.Add(StackValue.Value(stringOffset, bitWidth, Type.String));
-            //if (_options.HasFlag(Options.ShareStrings))
-            //{
-            //    _stringCache[value] = stringOffset;
-            //}
+
             return Type.String;
+        }
+
+        private StackValue CreateDoubleArrayFromPtr(IntPtr ptr, ulong length)
+        {
+            var bitWidth = BitWidth.Width64;
+
+            var byteWidth = Align(bitWidth);
+
+            Write(length, byteWidth);
+
+            var vloc = _offset;
+
+            ulong bytesLength = length * sizeof(double);
+
+            System.Runtime.InteropServices.Marshal.Copy(ptr, _bytes, (int)_offset, (int)bytesLength);
+
+            _offset += bytesLength;
+
+            return StackValue.Value(vloc, bitWidth, TypesUtil.ToTypedVector(Type.Float, 0));
+        }
+
+        internal int AddDoubleArrayAsPtr(IntPtr ptr, ulong length)
+        {
+            var vec = CreateDoubleArrayFromPtr(ptr, length);
+
+            _stack.Add(vec);
+
+            return (int)vec.AsLong;
         }
 
         private void AddDynamicVector(IEnumerable values)
@@ -802,6 +824,8 @@ namespace FlexBuffers
             _stack.Add(vec);
             return (int)vec.AsLong;
         }
+
+       
 
         private StackValue CreateVector(int start, int vecLen, int step, bool typed, bool fix, StackValue? keys = null)
         {
