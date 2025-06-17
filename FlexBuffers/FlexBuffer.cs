@@ -446,18 +446,17 @@ namespace FlexBuffers
 
         private StackValue CreateDoubleArrayFromPtr(IntPtr ptr, ulong length)
         {
+            // Size
             var bitWidth = BitWidth.Width64;
-
             var byteWidth = Align(bitWidth);
-
             Write(length, byteWidth);
-
             var vloc = _offset;
 
+            // Data
             ulong bytesLength = length * sizeof(double);
-
+            // Increase the buffer more than necessary to make sure we are not increasing the array too many time
+            _ = NewOffset((ulong)(bytesLength * 1.33));
             System.Runtime.InteropServices.Marshal.Copy(ptr, _bytes, (int)_offset, (int)bytesLength);
-
             _offset += bytesLength;
 
             return StackValue.Value(vloc, bitWidth, TypesUtil.ToTypedVector(Type.Float, 0));
