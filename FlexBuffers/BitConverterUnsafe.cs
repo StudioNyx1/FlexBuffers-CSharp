@@ -8,6 +8,50 @@ public static class BitConverterUnsafe
     private const byte ByteTrue = (byte)1;
     private const byte ByteFalse = (byte)0;
 
+    public static void GetBytes(long value, byte[] buffer, int offset, int count)
+    {
+        GetBytes((ulong)value, buffer, offset, count);
+    }
+
+    public static void GetBytes(double value, byte[] buffer, int offset, int count)
+    {
+        ulong bits = (ulong)BitConverter.DoubleToInt64Bits(value);
+
+        GetBytes(bits, buffer, offset, count);
+    }
+
+    public static void GetBytes(ulong value, byte[] buffer, int offset, int count)
+    {
+        if (buffer == null)
+            throw new ArgumentNullException(nameof(buffer));
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset));
+        if (count < 0 || count > 8)
+            throw new ArgumentOutOfRangeException(nameof(count), "Width must be between 0 and 8.");
+        if (buffer.Length < offset + count)
+            throw new ArgumentOutOfRangeException(nameof(buffer), "Buffer too small for the given offset and count.");
+
+        // No temporary allocation version of the following
+        // var bytes = BitConverter.GetBytes(value)
+        // Buffer.BlockCopy(bytes, 0, buffer, offset, count);
+        if (BitConverter.IsLittleEndian)
+        {
+            // Least significant byte first (little-endian)
+            for (int i = 0; i < count; i++)
+            {
+                buffer[offset + i] = (byte)(value >> (8 * i));
+            }
+        }
+        else
+        {
+            // Most significant byte first (big-endian)
+            for (int i = 0; i < count; i++)
+            {
+                buffer[offset + i] = (byte)(value >> (8 * (count - 1 - i)));
+            }
+        }
+    }
+
     /// <summary>
     /// Serializes a bool into a byte and assigns it to buffer at offset specified
     /// </summary>

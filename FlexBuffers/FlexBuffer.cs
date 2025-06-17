@@ -750,14 +750,15 @@ namespace FlexBuffers
         {
             var newOffset = NewOffset(width);
 
-            /*
-            var bytes = BitConverter.GetBytes(value);
-            var count = Math.Min((ulong)bytes.Length, width);
-            Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
-            */
+            // Avoid overflow when trying to read on a buffer with less than 8 bytes remaining (length - offset)
+            ulong valueSize = sizeof(long);
+            var count = Math.Min(valueSize, width);
+            BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset, (int)count);
 
-            // BUG: If 0 then don't copy (Don't remember what this comment was for)
-            BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset);
+            //var bytes = BitConverter.GetBytes(value);
+            //var count = Math.Min((ulong)bytes.Length, width);
+            //Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
+
 
             _offset = newOffset;
         }
@@ -765,20 +766,32 @@ namespace FlexBuffers
         private void Write(ulong value, ulong width)
         {
             var newOffset = NewOffset(width);
-            BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset);
-            //var newOffset = NewOffset(width);
+
+            // Avoid overflow when trying to read on a buffer with less than 8 bytes remaining (length - offset)
+            ulong valueSize = sizeof(ulong);
+            var count = Math.Min(valueSize, width);
+            BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset, (int)count);
+
             //var bytes = BitConverter.GetBytes(value);
             //var count = Math.Min((ulong)bytes.Length, width);
             //Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
+
             _offset = newOffset;
         }
 
         private void Write(double value, ulong width)
         {
             var newOffset = NewOffset(width);
-            BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset);
-            // var count = Math.Min((ulong)bytes.Length, width);
-            // Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
+
+            // Avoid overflow when trying to read on a buffer with less than 8 bytes remaining (length - offset)
+            ulong valueSize = sizeof(double);
+            var count = Math.Min(valueSize, width);
+            BitConverterUnsafe.GetBytes(value, Bytes, (int)_offset, (int)count);
+
+            //var bytes = BitConverter.GetBytes(value);
+            //var count = Math.Min((ulong)bytes.Length, width);
+            //Buffer.BlockCopy(bytes, 0, _bytes, (int)_offset, (int)count);
+
             _offset = newOffset;
         }
 
